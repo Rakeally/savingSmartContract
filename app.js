@@ -140,7 +140,7 @@ app.get('/Balance', (req,res) => {
  *               id:
  *                  type: integer
  *                  description: Account id
- *                  example: 1
+ *                  example: 4
  *               publicKey:
  *                  type: string
  *                  description: Saving Account public key 
@@ -214,7 +214,7 @@ app.post('/savingAccounts', (req,res) => {
  *               id:
  *                  type: integer
  *                  description: Account id
- *                  example: 1
+ *                  example: 4
  *               publicKey:
  *                  type: string
  *                  description: Saving account public key
@@ -278,7 +278,7 @@ app.post('/addSaving', (req,res) => {
  *               id:
  *                  type: integer
  *                  description: Account id
- *                  example: 1
+ *                  example: 4
  *               publicKey:
  *                  type: string
  *                  description: Saving account public key
