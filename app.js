@@ -46,10 +46,16 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: 'http://localhost:8000',
+      url: 'https://savingsmartcontract.herokuapp.com',
       description: 'Development server',
     },
   ],
+  // servers: [
+  //   {
+  //     url: 'http://localhost:8000',
+  //     description: 'Development server',
+  //   },
+  // ],
 };
 
 const options = {
