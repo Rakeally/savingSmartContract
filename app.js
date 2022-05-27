@@ -28,8 +28,7 @@ const https = require("https");
 tezos.setPackerProvider(new MichelCodecPacker());
 tezos.setSignerProvider(InMemorySigner.fromFundraiser(acc.email, acc.password, acc.mnemonic.join(' ')))
 
-const tezosNode = 'https://conseil-granada.cryptonomic-infra.tech:443'
-// 'https://rpc.tzkt.io/ithacanet/';
+
 
 const swaggerDefinition = {
   openapi: '3.0.0',
@@ -53,6 +52,12 @@ const swaggerDefinition = {
       description: 'Development server',
     },
   ],
+  // servers: [
+  //   {
+  //     url: 'http://localhost:8000/',
+  //     description: 'Development server',
+  //   },
+  // ],
 
 };
 
@@ -433,12 +438,18 @@ app.post('/demandWithdraw', (req,res) => {
 
 
 //Transfer Tez to participants after withdraw demand
-
- /**
+  /**
  * @swagger
  * /transfer:
  *   post:
- *     summary: Tranfer Tez to Account owner after withdraw demand
+ *     responses:
+ *        '200':
+ *          description: success
+ *        '400':
+ *          description: An error occured
+ *        '500':
+ *          description: Server error
+ *     summary: send Tez to wallet
  *     requestBody:
  *       required: true
  *       content:
@@ -448,32 +459,35 @@ app.post('/demandWithdraw', (req,res) => {
  *             properties:
  *               amount:
  *                  type: integer
- *                  description: Amount to be transferred
- *                  example: 24
- *               address:
+ *                  description: Amount to send
+ *                  example: 50
+ *               publicKey:
  *                  type: string
- *                  description: Participant's publickey 
- *                  example: tz1M6x9Y4cAGWpmkJjrSopTLfTLAUVmCZhh4
-*/ 
+ *                  description:  account public key
+ *                  example: tz1M6x9Y4cAGWpmkJjrSopTLfTLAUVmCZoLv
+*/
 app.post('/transfer', (req,res) => {
   const amount = req.body.amount;
-  const address = req.body.address;
+  const publicKey = req.body.publicKey;
 
-console.log(`Transfering ${amount} ꜩ to ${address}...`);
+console.log(`Transfering ${amount} ꜩ to ${publicKey}...`);
 tezos.contract
-  .transfer({ to: address, amount: amount })
+  .transfer({ to: publicKey, amount: amount })
   .then((op) => {
     console.log(`Waiting for ${op.hash} to be confirmed...`);
     // return op.confirmation(1).then(() => op.hash);
-    return res.send(op.hash);
+    return res.send((op.hash).toString());
   })
-  .then((hash) => console.log(`Operation injected: https://ithaca.tzstats.com/${hash}`))
-  .catch((error) => console.log(`Error: ${error} ${JSON.stringify(error, null, 2)}`+ error));
 
-}
-)
+  .catch((error) => {
+    // console.log(`Error: ${JSON.stringify(error, null, 2)}`))
+    console.log(`Error: verify your infos`);
+    return res.status(400).send("Public key not valid, try again later");
+    })      .finally(()=>{
+res.end();
+})
 
-
+})
 var port = process.env.PORT || 8000;
 
 app.listen(port, () => {
