@@ -1,6 +1,8 @@
 const express = require('express')
 const { InMemorySigner } = require('@taquito/signer');
 const {TezosToolkit, MichelCodecPacker } = require('@taquito/taquito');
+const { KeyStoreUtils, SoftSigner } = require('conseiljs-softsigner');
+const { TezosNodeWriter, KeyStoreType } = require('conseiljs');
 
 var  swaggerJSDoc = require("swagger-jsdoc");
 var  swaggerUi = require("swagger-ui-express");
@@ -18,7 +20,7 @@ app.set('views', __dirname);
 
 const tezos = new TezosToolkit('https://ithacanet.smartpy.io');
 
-const contractKey='KT1LeSRAyB3RfXST6DgnwkKHPuw3RmHHU6Dj';
+const contractKey='KT19uY7VYK4a5EeujFMAP1Wrh9npuSYdDaGS';
 
 
 const privateKey ="tz1M6x9Y4cAGWpmkJjrSopTLfTLAUVmCZoLv";
@@ -26,7 +28,8 @@ const https = require("https");
 tezos.setPackerProvider(new MichelCodecPacker());
 tezos.setSignerProvider(InMemorySigner.fromFundraiser(acc.email, acc.password, acc.mnemonic.join(' ')))
 
-
+const tezosNode = 'https://conseil-granada.cryptonomic-infra.tech:443'
+// 'https://rpc.tzkt.io/ithacanet/';
 
 const swaggerDefinition = {
   openapi: '3.0.0',
@@ -50,12 +53,7 @@ const swaggerDefinition = {
       description: 'Development server',
     },
   ],
-  // servers: [
-  //   {
-  //     url: 'http://localhost:8000',
-  //     description: 'Development server',
-  //   },
-  // ],
+
 };
 
 const options = {
@@ -78,33 +76,147 @@ app.get('/', (req, res) => {
 });
 
 
-  //*********************************Get Balance**************************************8 */
+//*********************************Create Tezos account***************************************/
+
 
   /**
  * @swagger
- * /Balance:
+ * /createTezWallet:
  *   get:
- *     summary: Tezos account balance
- *     description: Retrieve tezos account balance
+ *     summary: create Tezos wallet 
+ *     description: create Tezos wallet
  *     responses:
- *       200:
- *         description: Tezos Balance.
+ *       '200':
+ *         description: Tezos wallet created.
+ *       '400':
+ *         description: An error occured
+ *       '500':
+ *         description: Server error
  *         content:
  *           application/json:
  *             schema:
  *               type: string
 */
-app.get('/Balance', (req,res) => {
+app.get('/createTezWallet', async(req, res) => {
+  try {
+    console.log('test');
+  const mnemonic = KeyStoreUtils.generateMnemonic();
+  console.log(`mnemonic: ${mnemonic}`);
+
+  // console.log('Create signer...'+ keystore.secretKey);
+  // const signer = await SoftSigner.createSigner(TezosMessageUtils.writeKeyWithHint(keystore.secretKey, 'edsk'));
+  // console.log('Signer Created...');
+  // const result = await TezosNodeWriter.sendIdentityActivationOperation(tezosNode, signer, keystore, '55c5b519-2554-4a7d-a8f5-2c7ba591a8ee');
+
+  // console.log(`Injected operation group id ${result.operationGroupID}`)
+
+  return res.send({ Mnemonic:mnemonic })
+
+  } catch (error) {
+    console.log(`Error: verify your infos`);
+    return res.status(400).send("Oops error, try again later");
+  }finally{
+    res.end();
+  }     
+
+});
+
+
+
+//*********************************Restore Tezos Wallet***************************************/
+
+
+  /**
+ * @swagger
+ * /restoreTezWallet:
+ *   post:
+ *     responses:
+ *        '200':
+ *          description: success
+ *        '400':
+ *          description: error occured, try again
+ *        '500':
+ *          description: Server error
+ *     summary: Restore wallet from Mnemonic
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               mnemonic:
+ *                  type: string
+ *                  description: Restore wallet from Mnemonic 
+ *                  example: industry indicate noble later second person comfort security fog bachelor volume tribe clap tunnel light hazard harsh foot eyebrow steel elder tent journey shield
+*/
+app.post('/restoreTezWallet', async(req, res) => {
+  try {
+    console.log('test');
+  const mnemonic = req.body.mnemonic;
+  console.log(`mnemonic: ${mnemonic}`);
+  const keystore = await KeyStoreUtils.restoreIdentityFromMnemonic(mnemonic, '');
+  console.log('Keystore: ' +keystore)
+  console.log(`account id: ${keystore.publicKeyHash}`);
+  console.log(`public key: ${keystore.publicKey}`);
+  console.log(`secret key: ${keystore.secretKey}`);
+
+  return res.json({ accountId: keystore.publicKeyHash,
+                    publicKey: keystore.publicKey,
+                    secretKey: keystore.secretKey,
+                    Passphrase:mnemonic
+                  })
+
+  } catch (error) {
+    console.log(`Error: Incorrect Mnemonic`);
+    return res.status(400).send("Incorrect Mnemonic, try again");
+  }finally{
+    res.end();
+  }     
+
+});
+
+
+
+  //*********************************Get Balance**************************************8 */
+
+  /**
+ * @swagger
+ * /walletBalance:
+ *   post:
+ *     responses:
+ *        '200':
+ *          description: success
+ *        '400':
+ *          description: Incorrect publicKey, try again
+ *        '500':
+ *          description: Server error
+ *     summary: Check wallet balance
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               publicKey:
+ *                  type: string
+ *                  description: public key
+ *                  example: tz1M6x9Y4cAGWpmkJjrSopTLfTLAUVmCZoLv
+*/
+app.post('/walletBalance', (req,res) => {
+  publicKey = req.body.publicKey;
   tezos.tz
-  .getBalance(privateKey)
+  .getBalance(publicKey)
   .then((balance) =>{
     console.log(`Public key balance is: ${balance.toNumber() / 1000000} ꜩ`);
-    return res.send((balance.toNumber() / 1000000).toString());
+    return res.send(`Wallet balance is: ${balance.toNumber() / 1000000} ꜩ`);
   })
   .catch((error) => {
     // console.log(`Error: ${JSON.stringify(error, null, 2)}`))
     console.log(`Error: verify your infos`);
-    return res.status(400);
+    return res.status(400).send("Enter a valid Tezos Public key and try again");
+
     }) 
   .finally(()=>{
     res.end();
@@ -158,7 +270,7 @@ app.get('/Balance', (req,res) => {
  *               withdrawDate:
  *                  type: string
  *                  description: Withdrawal date 
- *                  example: 2022-05-23 
+ *                  example: 2022-05-23T11:45:25
 */
 app.post('/savingAccounts', (req,res) => {
   tezos.contract
@@ -184,8 +296,8 @@ app.post('/savingAccounts', (req,res) => {
 .catch((error) => {
           // console.log(`Error: ${JSON.stringify(error, null, 2)}`))
           console.log(`Error: verify your infos`);
-          return res.status(400);
-          })      .finally(()=>{
+          return res.status(400).send("Sorry Id already in use, try again with a different id");
+        })      .finally(()=>{
       res.end();
     })
   
@@ -248,8 +360,8 @@ app.post('/addSaving', (req,res) => {
 .catch((error) => {
           // console.log(`Error: ${JSON.stringify(error, null, 2)}`))
           console.log(`Error: verify your infos`);
-          return res.status(400);
-          })      .finally(()=>{
+          return res.status(400).send("Verify your public key or Id infos and try again");
+        })      .finally(()=>{
       res.end();
     })
   
@@ -312,7 +424,7 @@ app.post('/demandWithdraw', (req,res) => {
 .catch((error) => {
           // console.log(`Error: ${JSON.stringify(error, null, 2)}`))
           console.log(`Error: verify your infos`);
-          return res.status(400);
+          return res.status(400).send("Not yet withdrawal time, try again later");
           })      .finally(()=>{
       res.end();
     })
@@ -360,8 +472,6 @@ tezos.contract
 
 }
 )
-
-
 
 
 var port = process.env.PORT || 8000;
