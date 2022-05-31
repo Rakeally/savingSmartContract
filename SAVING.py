@@ -27,7 +27,7 @@ class SavingSmartContract(sp.Contract):
 
     @sp.entry_point
     def addSaving(self, params):
-        #verify if he is the owner of this orphanage
+        #verify if he is the owner of this account
         sp.verify(params.id !=0, "Enter the Account Id")
         sp.if self.data.savingAccounts.contains(params.id):
 
@@ -107,8 +107,6 @@ class SavingSmartContract(sp.Contract):
         scenario.h2("Add savingAccount")
         #Add savingAccount
         scenario += myContract.savingAccounts(id=1, name="Travel saving", publicKey=sp.address("tz1M6x9Y4cAGWpmkJjrSopTLfTLAUVmCZoLv"), withdrawDate=sp.timestamp(1653147907), date=sp.timestamp(12445598)).run(valid=True)
-        # scenario.h2("Attempt to add already existant Orphanage error test")
-        # scenario += myContract.addOrphanage(id=1, name="Orphanage 1", headOffice="Douala, Akwa Nord", registrationNumber="237LTDJH", country="Cameroun", city="Douala", publicKey=sp.address("tz1M6x9Y4cAGWpmkJjrSopTLfTLAUVmCZoLv"), description="descriptions" ).run(valid=False)
 
         scenario.h2("Add saving")
         #Add saving

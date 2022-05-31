@@ -46,18 +46,18 @@ const swaggerDefinition = {
       url: 'https://jsonplaceholder.typicode.com',
     },
   },
-  servers: [
-    {
-      url: 'https://savingsmartcontract.herokuapp.com',
-      description: 'Development server',
-    },
-  ],
   // servers: [
   //   {
-  //     url: 'http://localhost:8000/',
+  //     url: 'https://savingsmartcontract.herokuapp.com',
   //     description: 'Development server',
   //   },
   // ],
+  servers: [
+    {
+      url: 'http://localhost:8100/',
+      description: 'Development server',
+    },
+  ],
 
 };
 
@@ -488,7 +488,7 @@ res.end();
 })
 
 })
-var port = process.env.PORT || 8000;
+var port = process.env.PORT || 8100;
 
 app.listen(port, () => {
   console.log("App is running on port " + port);
