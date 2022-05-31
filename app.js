@@ -46,18 +46,18 @@ const swaggerDefinition = {
       url: 'https://jsonplaceholder.typicode.com',
     },
   },
-  // servers: [
-  //   {
-  //     url: 'https://savingsmartcontract.herokuapp.com',
-  //     description: 'Development server',
-  //   },
-  // ],
   servers: [
     {
-      url: 'http://localhost:8100/',
+      url: 'https://savingsmartcontract.herokuapp.com',
       description: 'Development server',
     },
   ],
+  // servers: [
+  //   {
+  //     url: 'http://localhost:8100/',
+  //     description: 'Development server',
+  //   },
+  // ],
 
 };
 
@@ -107,13 +107,6 @@ app.get('/createTezWallet', async(req, res) => {
     console.log('test');
   const mnemonic = KeyStoreUtils.generateMnemonic();
   console.log(`mnemonic: ${mnemonic}`);
-
-  // console.log('Create signer...'+ keystore.secretKey);
-  // const signer = await SoftSigner.createSigner(TezosMessageUtils.writeKeyWithHint(keystore.secretKey, 'edsk'));
-  // console.log('Signer Created...');
-  // const result = await TezosNodeWriter.sendIdentityActivationOperation(tezosNode, signer, keystore, '55c5b519-2554-4a7d-a8f5-2c7ba591a8ee');
-
-  // console.log(`Injected operation group id ${result.operationGroupID}`)
 
   return res.send({ Mnemonic:mnemonic })
 
